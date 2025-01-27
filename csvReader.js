@@ -7,30 +7,39 @@ class CsvReader extends HTMLElement {
 
     // Default configuration
     this.config = {
-      delimiter: ",", // Default delimiter
+      delimiter: ";", // Default delimiter
       header: true, // Parse with headers
     };
 
-    // Create DOM structure
-    this.shadowRoot.innerHTML = `
-      <div id="drop-zone">
-        <p>Drag & Drop your CSV file here</p>
-        <p>or</p>
-        <button id="file-selector">Select a File</button>
-        <input type="file" id="file-input" accept=".csv" hidden />
-      </div>
-      <div id="output"></div>
-    `;
+    // Create DOM structure   
+    let dropZone = this.createElement({ tag: 'div', id: 'drop-zone' });
+    dropZone.append(
+      this.createElement({ tag: 'p', text: 'Drag & Drop your CSV file here' }),
+      this.createElement({ tag: 'p', text: 'or' }),
+      this.createElement({ tag: 'button', id: 'file-selector', text: 'Select a File' }),
+      this.createElement({ tag: 'input', type: 'file', id: 'file-input', accept: '.csv', hidden: true })
+    );
+    this.shadowRoot.append(dropZone, this.createElement({ tag: 'div', id: 'output' }));
 
     // Append styles to shadow DOM
     this.addStyles();
+  }
+
+  createElement({ tag = 'div', text = '', type = "", id = '', className = '', accept = '', hidden = false }) {
+    let element = document.createElement(tag);
+    element.innerText = text;
+    if (type !== '') element.type = type;
+    if (id !== '') element.id = id;
+    if (className !== '') element.className = className;
+    if (accept !== '') element.accept = accept;
+    if (hidden) element.hidden = hidden;
+    return element;
   }
 
   connectedCallback() {
     const dropZone = this.shadowRoot.querySelector("#drop-zone");
     const fileInput = this.shadowRoot.querySelector("#file-input");
     const fileSelector = this.shadowRoot.querySelector("#file-selector");
-    const outputDiv = this.shadowRoot.querySelector("#output");
 
     // Drag-and-drop handlers
     dropZone.addEventListener("dragover", (e) => {
@@ -53,17 +62,17 @@ class CsvReader extends HTMLElement {
     fileSelector.addEventListener("click", () => fileInput.click());
     fileInput.addEventListener("change", (e) => {
       const file = e.target.files[0];
-      this.handleFile(file, outputDiv);
+      this.handleFile(file);
     });
   }
 
   // Function to handle file reading
-  handleFile(file, outputDiv) {
+  handleFile(file) {
     if (file && file.type === "text/csv") {
       const reader = new FileReader();
       reader.onload = (event) => {
         const content = event.target.result;
-        this.parseCSV(content, outputDiv);
+        this.parseCSV(content, file);
       };
       reader.onerror = () => {
         alert("Error reading file.");
@@ -75,7 +84,7 @@ class CsvReader extends HTMLElement {
   }
 
   // Function to parse CSV content
-  parseCSV(content, outputDiv) {
+  parseCSV(content, file) {
     const { delimiter, header } = this.config;
 
     // Split content into lines
@@ -104,9 +113,10 @@ class CsvReader extends HTMLElement {
     }
 
     // Save data to localStorage
-    localStorage.setItem("csvData", JSON.stringify(data));
+    localStorage.setItem(file.name, JSON.stringify(data));
 
-    // Display parsed data
+    // Display parsed data    
+    const outputDiv = this.shadowRoot.querySelector("#output");
     outputDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
   }
 
@@ -126,46 +136,10 @@ class CsvReader extends HTMLElement {
 
   // Function to dynamically add styles to shadow DOM
   addStyles() {
-    const style = document.createElement("style");
-    style.textContent = `
-      #drop-zone {
-        border: 2px dashed #0078d4;
-        background: #f9f9f9;
-        padding: 20px;
-        text-align: center;
-        border-radius: 10px;
-        transition: background 0.3s, border-color 0.3s;
-      }
-
-      #drop-zone.dragover {
-        border-color: #005bb5;
-        background: #eaf4fc;
-      }
-
-      pre {
-        white-space: pre-wrap;
-        word-wrap: break-word;
-        background: #f4f4f4;
-        padding: 10px;
-        border-radius: 5px;
-        overflow: auto;
-      }
-
-      button {
-        margin-top: 10px;
-        padding: 10px 15px;
-        border: none;
-        background: #0078d4;
-        color: white;
-        border-radius: 5px;
-        cursor: pointer;
-      }
-
-      button:hover {
-        background: #005bb5;
-      }
-    `;
-    this.shadowRoot.appendChild(style);
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = './style.css';
+    this.shadowRoot.appendChild(link);
   }
 
   // Allow setting configuration via attributes

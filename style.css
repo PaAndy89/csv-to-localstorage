@@ -1,0 +1,40 @@
+#drop-zone {
+    border: 2px dashed #0078d4;
+    background: #f9f9f9;
+    padding: 20px;
+    text-align: center;
+    border-radius: 10px;
+    transition: background 0.3s, border-color 0.3s;
+}
+
+#drop-zone.dragover {
+    border-color: #005bb5;
+    background: #eaf4fc;
+}
+
+#output {
+    visibility: hidden;
+}
+
+pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    background: #f4f4f4;
+    padding: 10px;
+    border-radius: 5px;
+    overflow: auto;
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px 15px;
+    border: none;
+    background: #0078d4;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #005bb5;
+}
